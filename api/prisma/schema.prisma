@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ── Enums ─────────────────────────────────────
+
+enum Role {
+  admin
+  front_desk
+}
+
+enum VisitStatus {
+  active
+  completed
+  cancelled
+}
+
+enum IdType {
+  national_id
+  kebele_id
+  passport
+  drivers_license
+  other
+}
+
+// ── User ──────────────────────────────────────
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  firstName          String
+  lastName           String
+  username           String    @unique
+  passwordHash       String // bcrypt, min cost 12
+  phone              String?
+  role               Role      @default(front_desk)
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(true) // true on admin-created or reset accounts
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  checkedInVisits  Visit[] @relation("CheckedInBy")
+  checkedOutVisits Visit[] @relation("CheckedOutBy")
+
+  @@map("users")
+}
+
+// ── Visitor ───────────────────────────────────
+
+model Visitor {
+  id       Int     @id @default(autoincrement())
+  fullName String
+  phone    String?
+  idType   IdType
+  idNumber String // passport or national ID number
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  visits Visit[]
+
+  @@unique([idType, idNumber])
+  @@map("visitors")
+}
+
+// ── Visit ─────────────────────────────────────
+
+model Visit {
+  id          Int @id @default(autoincrement())
+  badgeNumber Int
+
+  // Visitor
+  visitorId Int
+  visitor   Visitor @relation(fields: [visitorId], references: [id])
+
+  // Department 
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  // Visit details
+  hostName String
+
+  // Status
+  status VisitStatus @default(active)
+
+  // Check-in
+  checkedInAt   DateTime @default(now())
+  checkedInById Int
+  checkedInBy   User     @relation("CheckedInBy", fields: [checkedInById], references: [id])
+
+  // Check-out (nullable — null means visitor is still inside)
+  checkedOutAt   DateTime?
+  checkedOutById Int?
+  checkedOutBy   User?     @relation("CheckedOutBy", fields: [checkedOutById], references: [id])
+  checkoutNote   String?
+
+  @@index([badgeNumber]) // fast badge lookup at checkout
+  @@index([visitorId]) // fast visitor history lookup
+  @@index([status]) // fast "who is inside" query
+  @@index([checkedInAt]) // fast date-range report queries
+  @@index([departmentId]) // fast department analytics
+  @@map("visits")
+}
+
+// ── Department ────────────────────────────────
+model Department {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  shortName String? @unique
+  color     String  @unique
+
+  isActive Boolean @default(true) // Department operational status
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  visits Visit[]
+
+  @@map("departments")
+}
+
+// ── Setting ───────────────────────────────────
+
+model Setting {
+  id Int @id @default(1) // singleton row
+
+  // General
+  orgName     String @default("Ethiopian Agricultural Transformation Institute")
+  badgePrefix String @default("VMS")
+
+  // Visitor rules
+  overstayEnabled   Boolean @default(true)
+  overstayAfterMins Int     @default(120)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

@@ -1,0 +1,52 @@
+{
+   "name": "vms-api",
+   "version": "1.0.0",
+   "private": true,
+   "description": "Backend API for VMS",
+   "main": "dist/server.js",
+   "type": "module",
+   "scripts": {
+      "dev": "tsx watch --env-file=.env src/server.ts",
+      "build": "tsc",
+      "start": "node dist/server.js",
+      "lint": "eslint .",
+      "lint:fix": "eslint . --fix"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "packageManager": "pnpm@10.33.2",
+   "dependencies": {
+      "@fast-csv/format": "^5.0.7",
+      "@prisma/adapter-mariadb": "^7.8.0",
+      "@prisma/client": "^7.8.0",
+      "bcrypt": "^6.0.0",
+      "cookie-parser": "^1.4.7",
+      "cors": "^2.8.6",
+      "date-fns": "^4.4.0",
+      "dotenv": "^17.4.2",
+      "express": "^5.2.1",
+      "express-mysql-session": "^3.0.3",
+      "express-session": "^1.19.0",
+      "puppeteer": "^25.0.4",
+      "zod": "^4.4.3"
+   },
+   "devDependencies": {
+      "@eslint/js": "^10.0.1",
+      "@faker-js/faker": "^10.5.0",
+      "@types/bcrypt": "^6.0.0",
+      "@types/cookie-parser": "^1.4.10",
+      "@types/cors": "^2.8.19",
+      "@types/express": "^5.0.6",
+      "@types/express-mysql-session": "^3.0.8",
+      "@types/express-session": "^1.19.0",
+      "@types/node": "^25.8.0",
+      "eslint": "^10.4.0",
+      "globals": "^17.6.0",
+      "jiti": "^2.7.0",
+      "prisma": "^7.8.0",
+      "tsx": "^4.22.0",
+      "typescript": "^6.0.3",
+      "typescript-eslint": "^8.59.3"
+   }
+}
